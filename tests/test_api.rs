@@ -1550,6 +1550,76 @@ fn object_template_set_accessor() {
 }
 
 #[test]
+fn object_template_set_indexed_property_handler() {
+  let _setup_guard = setup();
+  let isolate = &mut v8::Isolate::new(Default::default());
+  let scope = &mut v8::HandleScope::new(isolate);
+  let context = v8::Context::new(scope);
+  let scope = &mut v8::ContextScope::new(scope, context);
+
+  {
+    let getter = |scope: &mut v8::HandleScope,
+                  index: u32,
+                  args: v8::PropertyCallbackArguments,
+                  mut rv: v8::ReturnValue| {
+      let this = args.this();
+      if index == 0 {
+        rv.set(this.get_internal_field(scope, 0).unwrap());
+      }
+    };
+
+    let setter = |scope: &mut v8::HandleScope,
+                  index: u32,
+                  _value: v8::Local<v8::Value>,
+                  args: v8::PropertyCallbackArguments| {
+      let this = args.this();
+      if index == 0 {
+        let val = v8::Integer::new(scope, 13);
+        assert!(this.set_internal_field(0, val.into()));
+      }
+    };
+
+    let name = v8::String::new(scope, "obj").unwrap();
+
+    // Lone getter
+    let templ = v8::ObjectTemplate::new(scope);
+    templ.set_internal_field_count(1);
+    templ.set_indexed_property_handler(getter);
+
+    let obj = templ.new_instance(scope).unwrap();
+    let int = v8::Integer::new(scope, 42);
+    obj.set_internal_field(0, int.into());
+    scope.get_current_context().global(scope).set(
+      scope,
+      name.into(),
+      obj.into(),
+    );
+    assert!(eval(scope, "obj[0]").unwrap().strict_equals(int.into()));
+    assert!(eval(scope, "obj[1]").unwrap().is_undefined());
+
+    // Getter + setter
+    let templ = v8::ObjectTemplate::new(scope);
+    templ.set_internal_field_count(1);
+    templ.set_indexed_property_handler_with_setter(getter, setter);
+
+    let obj = templ.new_instance(scope).unwrap();
+    obj.set_internal_field(0, int.into());
+    scope.get_current_context().global(scope).set(
+      scope,
+      name.into(),
+      obj.into(),
+    );
+    let new_int = v8::Integer::new(scope, 13);
+    assert!(eval(scope, "obj[0]").unwrap().strict_equals(int.into()));
+    assert!(eval(scope, "obj[0] = null; obj[0]")
+      .unwrap()
+      .strict_equals(new_int.into()));
+    // Falls back on standard setter
+    assert!(eval(scope, "obj[1] = null; obj[1]").unwrap().is_null());
+  }
+}
+
+#[test]
 fn object() {
   let _setup_guard = setup();
   let isolate = &mut v8::Isolate::new(Default::default());

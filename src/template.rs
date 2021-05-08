@@ -15,6 +15,8 @@ use crate::Function;
 use crate::FunctionBuilder;
 use crate::FunctionCallback;
 use crate::HandleScope;
+use crate::IndexedPropertyGetterCallback;
+use crate::IndexedPropertySetterCallback;
 use crate::Local;
 use crate::Object;
 use crate::PropertyAttribute;
@@ -89,6 +91,15 @@ extern "C" {
     key: *const Name,
     getter: AccessorNameGetterCallback,
     setter: AccessorNameSetterCallback,
+  );
+  fn v8__ObjectTemplate__SetIndexedPropertyHandler(
+    this: *const ObjectTemplate,
+    getter: IndexedPropertyGetterCallback,
+  );
+  fn v8__ObjectTemplate__SetIndexedPropertyHandlerWithSetter(
+    this: *const ObjectTemplate,
+    getter: IndexedPropertyGetterCallback,
+    setter: IndexedPropertySetterCallback,
   );
 }
 
@@ -298,6 +309,29 @@ impl ObjectTemplate {
       v8__ObjectTemplate__SetAccessorWithSetter(
         self,
         &*key,
+        getter.map_fn_to(),
+        setter.map_fn_to(),
+      )
+    }
+  }
+
+  pub fn set_indexed_property_handler(
+    &self,
+    getter: impl MapFnTo<IndexedPropertyGetterCallback>,
+  ) {
+    unsafe {
+      v8__ObjectTemplate__SetIndexedPropertyHandler(self, getter.map_fn_to())
+    }
+  }
+
+  pub fn set_indexed_property_handler_with_setter(
+    &self,
+    getter: impl MapFnTo<IndexedPropertyGetterCallback>,
+    setter: impl for<'s> MapFnTo<IndexedPropertySetterCallback<'s>>,
+  ) {
+    unsafe {
+      v8__ObjectTemplate__SetIndexedPropertyHandlerWithSetter(
+        self,
         getter.map_fn_to(),
         setter.map_fn_to(),
       )

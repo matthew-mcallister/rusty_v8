@@ -1047,6 +1047,19 @@ void v8__ObjectTemplate__SetAccessorWithSetter(
   ptr_to_local(&self)->SetAccessor(ptr_to_local(&key), getter, setter);
 }
 
+void v8__ObjectTemplate__SetIndexedPropertyHandler(
+    const v8::ObjectTemplate& self,
+    v8::IndexedPropertyGetterCallback getter) {
+  ptr_to_local(&self)->SetIndexedPropertyHandler(getter);
+}
+
+void v8__ObjectTemplate__SetIndexedPropertyHandlerWithSetter(
+    const v8::ObjectTemplate& self,
+    v8::IndexedPropertyGetterCallback getter,
+    v8::IndexedPropertySetterCallback setter) {
+  ptr_to_local(&self)->SetIndexedPropertyHandler(getter, setter);
+}
+
 const v8::Object* v8__Object__New(v8::Isolate* isolate) {
   return local_to_ptr(v8::Object::New(isolate));
 }
