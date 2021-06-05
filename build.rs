@@ -473,6 +473,8 @@ fn ninja(gn_out_dir: &Path, maybe_env: Option<NinjaEnv>) -> Command {
   let mut cmd = Command::new(cmd_string);
   cmd.arg("-C");
   cmd.arg(&gn_out_dir);
+  cmd.arg("-j");
+  cmd.arg(env::var("NUM_JOBS").unwrap());
   if let Some(env) = maybe_env {
     for item in env {
       cmd.env(item.0, item.1);
