@@ -1209,6 +1209,39 @@ const v8::External* v8__External__New(v8::Isolate* isolate, void* value) {
 
 void* v8__External__Value(const v8::External& self) { return self.Value(); }
 
+const v8::Map* v8__Map__New(v8::Isolate* isolate) {
+  return local_to_ptr(v8::Map::New(isolate));
+}
+
+const v8::Value* v8__Map__Get(const v8::Map& self,
+                              const v8::Context& context,
+                              const v8::Value& key) {
+  return maybe_local_to_ptr(ptr_to_local(&self)->Get(
+      ptr_to_local(&context), ptr_to_local(&key)));
+}
+
+const v8::Map* v8__Map__Set(const v8::Map& self,
+                            const v8::Context& context,
+                            const v8::Value& key,
+                            const v8::Value& value) {
+  return maybe_local_to_ptr(ptr_to_local(&self)->Set(
+      ptr_to_local(&context), ptr_to_local(&key), ptr_to_local(&value)));
+}
+
+MaybeBool v8__Map__Has(const v8::Map& self,
+                       const v8::Context& context,
+                       const v8::Value& key) {
+  return maybe_to_maybe_bool(ptr_to_local(&self)->Has(
+      ptr_to_local(&context), ptr_to_local(&key)));
+}
+
+MaybeBool v8__Map__Delete(const v8::Map& self,
+                          const v8::Context& context,
+                          const v8::Value& key) {
+  return maybe_to_maybe_bool(ptr_to_local(&self)->Delete(
+      ptr_to_local(&context), ptr_to_local(&key)));
+}
+
 size_t v8__Map__Size(const v8::Map& self) { return self.Size(); }
 
 const v8::Array* v8__Map__As__Array(const v8::Map& self) {

@@ -3820,13 +3820,26 @@ fn test_map_api() {
     let context = v8::Context::new(scope);
     let scope = &mut v8::ContextScope::new(scope, context);
 
+    assert!(v8::Map::new(scope).is_map());
+
     let value = eval(scope, "new Map([['r','s'],['v',8]])").unwrap();
     assert!(value.is_map());
     assert!(value == v8::Local::<v8::Map>::try_from(value).unwrap());
     assert!(value != v8::Object::new(scope));
-    assert_eq!(v8::Local::<v8::Map>::try_from(value).unwrap().size(), 2);
+
     let map = v8::Local::<v8::Map>::try_from(value).unwrap();
     assert_eq!(map.size(), 2);
+
+    let key = v8::String::new(scope, "w").unwrap().into();
+    let value = v8::Number::new(scope, 12f64);
+    map.set(scope, key, value.into());
+    assert!(
+      map.get(scope, key).unwrap().to_number(scope).unwrap() == value
+    );
+    assert!(map.has(scope, key).unwrap());
+    map.delete(scope, key).unwrap();
+    assert!(!map.has(scope, key).unwrap());
+
     let map_array = map.as_array(scope);
     assert_eq!(map_array.length(), 4);
     assert!(
