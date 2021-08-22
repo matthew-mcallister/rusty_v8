@@ -38,6 +38,10 @@ extern "C" {
     isolate: *mut Isolate,
     index: u32,
   ) -> *const StackFrame;
+  fn v8__StackTrace__CurrentStackTrace(
+      isolate: *mut Isolate,
+      frame_limit: int,
+  ) -> *const StackTrace;
 
   fn v8__StackFrame__GetLineNumber(this: *const StackFrame) -> int;
   fn v8__StackFrame__GetColumn(this: *const StackFrame) -> int;
@@ -83,6 +87,19 @@ impl StackTrace {
         v8__StackTrace__GetFrame(self, sd.get_isolate_ptr(), index as u32)
       })
     }
+  }
+
+  /// Grab a snapshot of the current JavaScript execution stack.
+  pub fn current_stack_trace<'s>(
+    scope: &mut HandleScope<'s>,
+    frame_limit: i32,
+  ) -> Local<'s, StackTrace> {
+    unsafe {
+      scope.cast_local(|sd| {
+        v8__StackTrace__CurrentStackTrace(sd.get_isolate_ptr(), frame_limit)
+      })
+    }
+    .unwrap()
   }
 }
 

@@ -1126,6 +1126,18 @@ fn exception() {
 }
 
 #[test]
+fn stack_trace() {
+  let _setup_guard = setup();
+  let isolate = &mut v8::Isolate::new(Default::default());
+  let scope = &mut v8::HandleScope::new(isolate);
+  let context = v8::Context::new(scope);
+  let scope = &mut v8::ContextScope::new(scope, context);
+
+  let stack_trace = v8::StackTrace::current_stack_trace(scope, 99);
+  assert_eq!(stack_trace.get_frame_count(), 0);
+}
+
+#[test]
 fn create_message_argument_lifetimes() {
   let _setup_guard = setup();
   let isolate = &mut v8::Isolate::new(Default::default());
